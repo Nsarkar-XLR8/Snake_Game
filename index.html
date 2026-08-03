@@ -1,70 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="cyber">
 <head>
   <meta charset="UTF-8">
-  <title>Snake Game</title>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: #222;
-    }
-    canvas {
-      border: 2px solid white;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game - Industry Standard Edition</title>
+  <meta name="description" content="A state-of-the-art, feature-rich Snake Game featuring glassmorphism visuals, Web Audio API synth SFX, power-ups, particle physics, leaderboard, and multi-mode gameplay.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Favicon Snake Icon -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+  <!-- Style System -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <canvas id="game" width="600" height="600"></canvas>
 
-  <script>
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
+  <!-- CRT Scanline Effect Overlay -->
+  <div class="crt-overlay"></div>
 
-    let box = 20;
-    let snake = [{x: 9*box, y: 10*box}];
-    let food = {x: Math.floor(Math.random()*29+1)*box, y: Math.floor(Math.random()*29+1)*box};
-    let dx = box, dy = 0;
+  <!-- App Wrapper -->
+  <div class="app-container">
 
-    document.addEventListener("keydown", e => {
-      if(e.key === "ArrowUp" && dy === 0) {dx=0; dy=-box;}
-      if(e.key === "ArrowDown" && dy === 0) {dx=0; dy=box;}
-      if(e.key === "ArrowLeft" && dx === 0) {dx=-box; dy=0;}
-      if(e.key === "ArrowRight" && dx === 0) {dx=box; dy=0;}
-    });
+    <!-- Header Navigation -->
+    <header class="game-header">
+      <div class="logo-group">
+        <span class="logo-icon">🐍</span>
+        <h1 class="logo-title">SNAKE NEON</h1>
+      </div>
+      <div class="nav-actions">
+        <button id="btnPause" class="icon-btn">⏸️ Pause</button>
+        <button id="btnMute" class="icon-btn">🔊 SFX On</button>
+        <button id="btnLeaderboard" class="icon-btn">🏆 Ranks</button>
+        <button id="btnAchievements" class="icon-btn">🎖️ Badges</button>
+        <button id="btnSettings" class="icon-btn">⚙️ Settings</button>
+      </div>
+    </header>
 
-    function draw() {
-      ctx.fillStyle = "green";
-      ctx.fillRect(0,0,600,600);
+    <!-- Main Workspace -->
+    <main class="main-stage">
 
-      for(let s of snake) {
-        ctx.fillStyle = "black";
-        ctx.fillRect(s.x, s.y, box, box);
-      }
+      <!-- Left HUD Panel -->
+      <aside class="panel">
+        <div class="panel-title">📊 Live Metrics</div>
+        
+        <div class="stat-card">
+          <span class="stat-label">SCORE</span>
+          <span id="valScore" class="stat-value">0</span>
+        </div>
 
-      ctx.fillStyle = "red";
-      ctx.fillRect(food.x, food.y, box, box);
+        <div class="stat-card">
+          <span class="stat-label">HIGH SCORE</span>
+          <span id="valHighScore" class="stat-value">0</span>
+        </div>
 
-      let head = {x: snake[0].x + dx, y: snake[0].y + dy};
+        <div class="stat-card">
+          <span class="stat-label">COMBO</span>
+          <span id="valCombo" class="stat-value">x1</span>
+        </div>
 
-      if(head.x === food.x && head.y === food.y) {
-        food = {x: Math.floor(Math.random()*29+1)*box, y: Math.floor(Math.random()*29+1)*box};
-      } else {
-        snake.pop();
-      }
+        <div class="stat-card">
+          <span class="stat-label">MODE</span>
+          <span id="valMode" class="stat-value" style="font-size: 1.1rem; color: var(--accent-cyan);">CLASSIC</span>
+        </div>
+      </aside>
 
-      if(head.x < 0 || head.y < 0 || head.x >= 600 || head.y >= 600 || snake.some(s => s.x===head.x && s.y===head.y)) {
-        clearInterval(game);
-        alert("Game Over");
-      }
+      <!-- Center Game Canvas -->
+      <section class="canvas-wrapper">
+        
+        <!-- Floating HUD Toast Notifications -->
+        <div id="floatingHud" class="floating-hud"></div>
 
-      snake.unshift(head);
-    }
+        <div class="canvas-container">
+          <canvas id="gameCanvas" width="600" height="600"></canvas>
+        </div>
 
-    let game = setInterval(draw, 100);
-  </script>
+        <!-- Keyboard Controls Hint -->
+        <div class="control-hints">
+          <div class="hint-item"><span class="kbd">W A S D</span> / <span class="kbd">↑ ↓ ← →</span> Move</div>
+          <div class="hint-item"><span class="kbd">P</span> / <span class="kbd">Space</span> Pause</div>
+          <div class="hint-item"><span class="kbd">R</span> Restart</div>
+          <div class="hint-item"><span class="kbd">M</span> Mute</div>
+        </div>
+
+        <!-- Mobile Touch D-Pad Controls -->
+        <div class="touch-controls">
+          <button id="dpadUp" class="dpad-btn dpad-up">▲</button>
+          <button id="dpadLeft" class="dpad-btn dpad-left">◀</button>
+          <button id="dpadRight" class="dpad-btn dpad-right">▶</button>
+          <button id="dpadDown" class="dpad-btn dpad-down">▼</button>
+        </div>
+
+      </section>
+
+      <!-- Right Active Powerups Panel -->
+      <aside class="panel">
+        <div class="panel-title">⚡ Active Power-Ups</div>
+        <div id="powerupsTray" class="powerups-tray">
+          <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 12px;">No active power-ups</div>
+        </div>
+      </aside>
+
+    </main>
+
+  </div>
+
+  <!-- Start Game Modal -->
+  <div id="modalStart" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">🎮 Choose Game Mode</h2>
+      </div>
+
+      <div class="setting-row">
+        <label class="setting-label" for="selectMode">Game Mode</label>
+        <select id="selectMode" class="setting-select">
+          <option value="classic">🕹️ Classic Snake</option>
+          <option value="arcade" selected>⚡ Arcade (Power-Ups)</option>
+          <option value="obstacles">🧱 Maze & Portals</option>
+          <option value="timeattack">⏱️ Time Attack (60s)</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label class="setting-label" for="selectDiff">Speed / Difficulty</label>
+        <select id="selectDiff" class="setting-select">
+          <option value="easy">Easy (Casual)</option>
+          <option value="medium" selected>Medium (Standard)</option>
+          <option value="hard">Hard (Fast)</option>
+          <option value="extreme">Extreme (Insane)</option>
+        </select>
+      </div>
+
+      <button id="btnStart" class="btn-primary">START GAME</button>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="modalGameOver" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title" style="color: var(--accent-danger);">💥 Game Over</h2>
+      </div>
+
+      <div style="text-align: center; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 0.9rem; color: var(--text-muted);" id="goReason">Border Crash!</div>
+        <div style="font-size: 2.8rem; font-weight: 800; color: var(--accent-green);" id="goScore">0</div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">POINTS EARNED</div>
+      </div>
+
+      <div class="setting-row">
+        <label class="setting-label" for="playerNameInput">Player Tag</label>
+        <input type="text" id="playerNameInput" class="setting-input" placeholder="ACE" maxlength="8" style="width: 140px; text-transform: uppercase;">
+      </div>
+
+      <button id="btnRestart" class="btn-primary">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="modalSettings" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">⚙️ Game Settings</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+
+      <div class="setting-row">
+        <label class="setting-label" for="settingTheme">Visual Theme</label>
+        <select id="settingTheme" class="setting-select">
+          <option value="cyber">Cyber Neon</option>
+          <option value="emerald">Emerald Jungle</option>
+          <option value="midnight">Midnight OLED</option>
+          <option value="retro">Retro Arcade</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label class="setting-label" for="settingVolume">SFX Volume</label>
+        <input type="range" id="settingVolume" min="0" max="100" value="50">
+      </div>
+
+      <div class="setting-row">
+        <label class="setting-label" for="settingCRT">Retro CRT Scanlines</label>
+        <input type="checkbox" id="settingCRT">
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="modalLeaderboard" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">🏆 Top Hall of Fame</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div id="leaderboardList" class="leaderboard-list"></div>
+    </div>
+  </div>
+
+  <!-- Achievements Modal -->
+  <div id="modalAchievements" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">🎖️ Achievements</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div id="achievementsGrid" class="achievements-grid"></div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/audio.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/powerups.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/controls.js"></script>
+  <script src="js/main.js"></script>
+
 </body>
 </html>
